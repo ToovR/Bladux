@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Bladux.Test.Counter": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "http://localhost:52243/"
+    }
+  }
+}

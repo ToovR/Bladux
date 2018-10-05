@@ -1,0 +1,29 @@
+﻿@using Bladux.Test.TodoList.Shared.Redux
+
+@if (StoreManager.Store.State.VisibilityFilter != Filter)
+{
+    <a href="#" onclick="@(() =>
+            {
+                StoreManager.Store.Dispatch(new FilterAction
+                {
+                    Type = ActionTypes.SetVisibilityFilter,
+                    Filter = @Filter
+
+                });
+            })">
+        @ChildContent
+    </a>
+}
+else
+{
+    @ChildContent
+}
+
+@functions {
+[Parameter]
+private RenderFragment ChildContent { get; set; }
+
+[Parameter]
+private FilterTodoTypes Filter { get; set; }
+
+}

@@ -1,0 +1,67 @@
+﻿@page "/"
+
+@using Bladux
+
+<h1>Counter</h1>
+
+<p>Current count: </p>
+
+<div class="panel-body">@CurrentCount</div>
+<button class="btn btn-primary" onclick="@IncrementCount">+</button>
+<button class="btn btn-primary" onclick="@DecrementCount">-</button>
+
+@functions {
+
+private int CurrentCount { get; set; }
+
+public enum CounterActions
+{
+    None,
+    Increment,
+    Decrement
+}
+
+public class CounterReducer : ReducerBase<int, Bladux.Action<CounterActions>, CounterActions>
+{
+    public override async Task<int> Reduce(int state, Bladux.Action<CounterActions> action)
+    {
+        switch (action.Type)
+        {
+            case CounterActions.Increment:
+                return state + 1;
+            case CounterActions.Decrement:
+                return state - 1;
+            default:
+                return state;
+        }
+    }
+}
+
+IStore<int, Bladux.Action<CounterActions>, CounterActions> _store;
+
+protected override async Task OnInitAsync()
+{
+    _store = new Store<int, CounterReducer, Bladux.Action<CounterActions>, CounterActions>();
+    _store.Dispatch(new Bladux.Action<CounterActions> { Type = CounterActions.Increment });
+    await _store.Subscribe(Render);
+}
+
+public void Render()
+{
+    CurrentCount = _store.State;
+}
+
+void IncrementCount()
+{
+    _store.Dispatch(new Bladux.Action<CounterActions> { Type = CounterActions.Increment });
+}
+
+void DecrementCount()
+{
+    _store.Dispatch(new Bladux.Action<CounterActions> { Type = CounterActions.Decrement });
+
+}
+
+int currentCount = 0;
+
+}

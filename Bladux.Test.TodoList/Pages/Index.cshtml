@@ -1,0 +1,91 @@
+﻿@page "/"
+@using Bladux.Test.TodoList.Shared.Redux
+
+<h1>Todo List</h1>
+
+@if (StoreManager.Store != null)
+{
+    <input type="text" bind="@iVal" />
+    <button onclick="@(() =>
+            {
+                StoreManager.Store.Dispatch(new TodoAction
+                {
+                    Type = ActionTypes.AddTodo,
+                    Value = new Todo
+                    {
+                        Id = nextTodoId++,
+                        Text = iVal
+                    }
+                }
+                );
+                iVal = "";
+            })">
+        Click me
+    </button>
+    <ul>
+        @if (StoreManager.Store.State != null && visibleTodos != null)
+        {
+            @foreach (Todo t in visibleTodos)
+            {
+                <li accesskey="@t.Id" style="text-decoration:@(t.IsCompleted ? " line-through" : "none" )">
+                    <div onclick="@(() =>
+                                               {
+                                                   StoreManager.Store.Dispatch(new TodoAction
+                                                   {
+                                                       Type = ActionTypes.ToggleTodo,
+                                                       Value = new Todo { Id = t.Id }
+                                                   });
+
+                                               })">
+                        @t.Text
+                    </div>
+                </li>
+            }
+        }
+    </ul>
+
+    <div><FilterLink Filter="@FilterTodoTypes.ShowAll">All</FilterLink>, <FilterLink Filter="@FilterTodoTypes.ShowInProgress">In progress</FilterLink>, <FilterLink Filter="@FilterTodoTypes.ShowCompleted">Completed</FilterLink></div>
+    <br />
+    <button onclick="@(() => StoreManager.Store.Subscribe(Render))">
+        Subscribe
+    </button>
+    <button onclick="@(() => StoreManager.Store.Subscribe(Render).Result())">
+        Unsubscribe
+    </button>
+
+}
+@functions {
+// Component part
+string iVal = "task 0";
+int nextTodoId;
+
+public Todo[] GetVisibleTodos(Todo[] allTodos, FilterTodoTypes filter)
+{
+    switch (filter)
+    {
+        case FilterTodoTypes.ShowCompleted:
+            return allTodos.Where(t => t.IsCompleted).ToArray();
+
+        case FilterTodoTypes.ShowInProgress:
+            return allTodos.Where(t => !t.IsCompleted).ToArray();
+
+        case FilterTodoTypes.ShowAll:
+        default:
+            return allTodos;
+    }
+}
+
+Todo[] visibleTodos;
+
+protected override async Task OnInitAsync()
+{
+    await StoreManager.Store.Subscribe(Render);
+}
+
+public void Render()
+{
+    visibleTodos = GetVisibleTodos(StoreManager.Store.State.Todos, StoreManager.Store.State.VisibilityFilter);
+    this.StateHasChanged();
+}
+
+}
